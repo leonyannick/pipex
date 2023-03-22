@@ -1,0 +1,17 @@
+{
+	//UseIntelliSensetolearnaboutpossibleattributes.
+	//Hovertoviewdescriptionsofexistingattributes.
+	//Formoreinformation,visit:https://go.microsoft.com/fwlink/?linkid=830387
+	"version":"0.2.0",
+	"configurations":[
+	{
+	"name":"Launch",
+	"type":"cppdbg",
+	"program":"${workspaceFolder}/pipex",
+	"args":["file1", "cmd1", "cm2", "file2"],
+	"cwd":"${workspaceFolder}",
+	"request":"launch",
+	"MIMode":"gdb"
+	}
+	]
+}
