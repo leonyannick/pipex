@@ -3,67 +3,82 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lbaumann <lbaumann@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/22 22:07:05 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/27 18:34:14 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
 
-void	init_data(t_data **data, int argc, char **argv)
+void	error_fatal(char *e_msg)
 {
-	*data = malloc(sizeof(t_data));
-	if (!*data)
+	perror(e_msg);
+	exit(errno);
+}
+
+void	execute_cmd(char *cmd)
+{
+	char	str[10];
+	read(STDIN_FILENO, str, 4);
+	write(STDOUT_FILENO, str, 4);
+}
+
+void	create_child(char *cmd)
+{
+	pid_t	pid;
+	int		fd[2];
+
+	if (pipe(fd) == -1)
+		error_fatal("pipe");
+	pid = fork();
+	if (pid == -1)
+		error_fatal("fork");
+	if (pid == 0)
 	{
-		perror("data alloc failed");
-		exit(EXIT_FAILURE);
+		close(fd[0]);
+		dup2(fd[1], STDOUT_FILENO);
+		execute_cmd(cmd);
+		close(fd[1]);
+		exit(1);
 	}
-	(*data)->cmdc = argc -3;
-	(*data)->argv = argv;
+	else
+	{
+		close(fd[1]);
+		dup2(fd[0], STDIN_FILENO);
+		waitpid(pid, NULL, 0);
+	}
+}
+
+void	usage(void)
+{
+	ft_printf("not enough parameters\n");
+	exit(EXIT_SUCCESS);
 }
 
 int	main(int argc, char **argv)
 {
-	t_data	*data;
-	int		i;
+	int	i;
+	int	infile;
+	int	outfile;
 	
-	data = NULL;
-	init_data(&data, argc, argv);
-	// if (argc < 5)
-	// 	return (ft_printf("not enough parameters\n"), EXIT_SUCCESS);
+	if (argc < 5)
+		usage();
 	
-	if (pipe(data->fd) == -1)
-		return (perror("pipe creation failed"), EXIT_FAILURE);
-	printf("cmdc: %d\n", data->cmdc);
-	// i = 0;
-	// while (i < data->cmdc)
-	// {
-	data->pid = fork();
-	if (data->pid == -1)
-		return (perror("fork failed"), EXIT_FAILURE);
-	if (data->pid == 0)
+	infile = open(argv[1], O_RDONLY);
+	outfile = open(argv[argc - 1], O_RDWR);
+	if (outfile == -1 || infile == -1)
+		error_fatal("infile/outfile");
+	dup2(infile, STDIN_FILENO);
+	
+	i = 2;
+	while (i < argc - 2)
 	{
-		//child ->exec command
-		dup2(data->fd[0], STDIN_FILENO);
-		close(data->fd[0]);
-		close(data->fd[1]);
-		char str[10];
-		read(STDIN_FILENO, str, 4);
-		str[4] = 0;
-		ft_putstr_fd(str, 2);
-		
+		create_child(argv[i]);
+		i++;
 	}
-	//parent
-	close(data->fd[0]);
-	const char test[] = "sometext";
-	write(data->fd[1], &test, 8);
-	close(data->fd[1]);
-	data->wpid = waitpid(data->pid, NULL, 0);
-	if (pipe(data->fd) == -1)
-		return (perror("pipe creation failed"), EXIT_FAILURE);
-	// 	i++;
-	// }
+	dup2(outfile, STDOUT_FILENO);
+	execute_cmd(argv[argc - 2]);
 	return (EXIT_SUCCESS);
 }
