@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/27 18:34:14 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/29 11:13:49 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ void	create_child(char *cmd)
 	{
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
-		execute_cmd(cmd);
+		char *newargv[] = { "/bin/cat", NULL };
+		execve("/bin/cat", newargv, NULL);
 		close(fd[1]);
 		exit(1);
 	}
