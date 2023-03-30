@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:42:54 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/27 12:32:29 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/30 17:49:49 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,28 @@
 # include <sys/wait.h>
 # include <errno.h>
 
-extern char* environ[];
+extern char **environ;
+
+# define READ 0
+# define WRITE 1
+
+int	execute_cmd(char *cmd);
 
 typedef struct s_data
 {
-	char	**argv;
-	int		cmdc;
-	int		fd[2];
-	pid_t	pid;
-	pid_t	wpid;
-} t_data;
+	int		**pipes;
+	int		pipe_count;
+	int		ncmds;
+	int		cmd_count;
+	int		infile;
+	int		outfile;
+}t_data;
+
+typedef enum e_redirect
+{
+	INPUT,
+	OUTPUT,
+	PIPE
+}e_redirect;
 
 #endif

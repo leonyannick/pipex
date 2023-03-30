@@ -6,7 +6,7 @@
 #    By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/19 09:17:44 by lbaumann          #+#    #+#              #
-#    Updated: 2023/03/22 11:03:59 by lbaumann         ###   ########.fr        #
+#    Updated: 2023/03/30 10:07:12 by lbaumann         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,6 +42,7 @@ HEADERS = -I $(INCDIR)
 
 SRCS = \
 	srcs/main.c \
+	srcs/command.c \
 
 #libft
 LIBFT = $(LIBFTDIR)libft.a
