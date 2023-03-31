@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/30 18:05:37 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 11:24:33 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,41 +40,28 @@ void	close_unused_pipes(t_data *data)
 	i = 0;
 	while (i < data->pipe_count)
 	{
-		
+		close(data->pipes[i][READ]);
+		close(data->pipes[i][WRITE]);
 		i++;
 	}
 }
 
-void	plumbing(t_data *data, e_redirect redirect)
+void	plumbing(t_data *data)
 {
-	if (redirect == INPUT)
+	if (data->cmd_count == 0)
 	{
 		dup2(data->infile, STDIN_FILENO);
 		close(data->infile);
-		close(data->pipes[data->cmd_count][READ]);
-		dup2(data->pipes[data->cmd_count][WRITE], STDOUT_FILENO);
-		close(data->pipes[data->cmd_count][WRITE]);
 	}
-	else if (redirect == OUTPUT)
+	if (data->cmd_count == (data->ncmds - 1))
 	{
-		close(data->pipes[data->cmd_count - 1][WRITE]);
-		dup2(data->pipes[data->cmd_count - 1][READ], STDIN_FILENO);
-		close(data->pipes[data->cmd_count - 1][READ]);
 		dup2(data->outfile, STDOUT_FILENO);
-		close(STDOUT_FILENO);
+		close(data->outfile);
 	}
-	else
-	{
-		//read end
-		close(data->pipes[data->cmd_count - 1][WRITE]);
+	if (data->cmd_count != 0)
 		dup2(data->pipes[data->cmd_count - 1][READ], STDIN_FILENO);
-		close(data->pipes[data->cmd_count - 1][READ]);
-		
-		//write end
-		close(data->pipes[data->cmd_count][READ]);
+	if (data->cmd_count != (data->ncmds - 1))
 		dup2(data->pipes[data->cmd_count][WRITE], STDOUT_FILENO);
-		close(data->pipes[data->cmd_count][WRITE]);
-	}
 	close_unused_pipes(data);
 }
 
@@ -82,25 +69,15 @@ void	plumbing(t_data *data, e_redirect redirect)
 void	child_labor(char *cmd, t_data *data)
 {
 	pid_t		pid;
-	e_redirect	redirect;
 
-	redirect = PIPE;
 	pid = fork();
 	if (pid == -1)
 		error_fatal("fork", data);
 	if (pid == 0)
 	{
-		if (data->cmd_count == 0)
-			redirect = INPUT;
-		else if (data->cmd_count == (data->ncmds - 1))
-			redirect = OUTPUT;
-		plumbing(data, redirect);
-		// close(p[0]);
-		// dup2(p[1], STDOUT_FILENO);
-		// close(p[1]);
+		plumbing(data);
 		execute_cmd(cmd);
 	}
-	return (1);
 }
 
 void	usage(void)
@@ -143,52 +120,25 @@ int	main(int argc, char **argv)
 	data.outfile = open(argv[argc - 1], O_RDWR);
 	if (data.outfile == -1 || data.infile == -1)
 		error_fatal("infile/outfile", NULL);
-	// if (argc < 5)
-	// 	usage();
+	if (argc < 5)
+		usage();
 	pipe_manufacturing(&data);
-
-	// i = 0;
-	// while (i < ncmds)
-	// {
-	// 	child_labor(argv[i], pipes);
-	// 	i++;
-	// }
-	// while (i < argc - 1)
-	// {
-	// 	wait(NULL);
-	// 	i++;
-	// }
-	
-	
-	// infile = open(argv[1], O_RDONLY);
-	// outfile = open(argv[argc - 1], O_RDWR);
-	// if (outfile == -1 || infile == -1)
-	// 	error_fatal("infile/outfile");
-	// dup2(infile, STDIN_FILENO);
-	// close(infile);
-	// close(outfile);
-	// i = 2;
-	// while (i < argc - 1)
-	// {
-	// 	if (pipe(p) == -1)
-	// 		error_fatal("pipe");
-	// 	if (i == (argc - 2))
-	// 	{
-	// 		dup2(outfile, STDOUT_FILENO);
-	// 		close(STDOUT_FILENO);
-	// 	}
-	// 	child_labor(argv[i], p);
-	// 	close(p[1]);
-	// 	dup2(p[0], STDIN_FILENO);
-	// 	close(p[0]);
-	// 	i++;
-	// }
-	// i = 2;
-	// while (i < argc - 1)
-	// {
-	// 	wait(NULL);
-	// 	i++;
-	// }
-	
+	i = 2;
+	while (i < argc - 1)
+	{
+		child_labor(argv[i], &data);
+		data.cmd_count++;
+		i++;
+	}
+	i = 2;
+	close(data.infile);
+	close(data.outfile);
+	close_unused_pipes(&data);
+	free_int_arr(data.pipes, data.pipe_count);
+	while (i < argc - 1)
+	{
+		wait(NULL);
+		i++;
+	}
 	return (EXIT_SUCCESS);
 }

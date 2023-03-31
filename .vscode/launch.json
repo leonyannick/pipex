@@ -8,7 +8,7 @@
 	"name":"Launch",
 	"type":"cppdbg",
 	"program":"${workspaceFolder}/pipex",
-	"args":["infile", "cmd1", "cm2", "outfile"],
+	"args":["infile", "cat", "cat", "cat", "outfile"],
 	"cwd":"${workspaceFolder}",
 	"request":"launch",
 	"MIMode":"gdb"
