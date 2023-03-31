@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:42:54 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 12:13:21 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 14:26:02 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ typedef struct s_data
 	int		cmd_count;
 	int		infile;
 	int		outfile;
+	char	*here_doc_temp;
 }t_data;
 
 int		execute_cmd(char *cmd, t_data *data);
