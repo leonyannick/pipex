@@ -6,12 +6,15 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/31 12:09:24 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 12:10:10 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 17:55:14 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
 
+/**
+ * goes through all pipes and closes both READ and WRITE end
+*/
 void	close_unused_pipes(t_data *data)
 {
 	int	i;
@@ -25,25 +28,50 @@ void	close_unused_pipes(t_data *data)
 	}
 }
 
+/**
+ * does input redirection for the first and last command
+ * and connects pipes to the correct ends
+ * 
+ * the STDIN of a process is always connected to previous pipe or infile
+ * for 1st cmd
+ * 
+ * the STDOUT is always connected to the current pipe or outfile for last cmd
+ * 
+ * closes all pipe fds in the end after duping with close_unused_pipes
+ * as they are no longer needed
+*/
 void	plumbing(t_data *data)
 {
 	if (data->cmd_count == 0)
 	{
-		dup2(data->infile, STDIN_FILENO);
+		if (dup2(data->infile, STDIN_FILENO) == -1)
+			error_fatal("dup2 infile failed", data);
 		close(data->infile);
 	}
 	if (data->cmd_count == (data->ncmds - 1))
 	{
-		dup2(data->outfile, STDOUT_FILENO);
+		if (dup2(data->outfile, STDOUT_FILENO) == -1)
+			error_fatal("dup2 outfile failed", data);
 		close(data->outfile);
 	}
 	if (data->cmd_count != 0)
-		dup2(data->pipes[data->cmd_count - 1][READ], STDIN_FILENO);
+	{
+		if (dup2(data->pipes[data->cmd_count - 1][READ], STDIN_FILENO) == -1)
+			error_fatal("dup2 READ end failed", data);
+	}
 	if (data->cmd_count != (data->ncmds - 1))
-		dup2(data->pipes[data->cmd_count][WRITE], STDOUT_FILENO);
+	{
+		if (dup2(data->pipes[data->cmd_count][WRITE], STDOUT_FILENO) == -1)
+			error_fatal("dup2 WRITE end failed", data);
+	}
 	close_unused_pipes(data);
 }
 
+/**
+ * allocates memory for a 2d int array to safe all the pipe fds
+ * nmcds-1 pipes are created
+ * for every pipe created, the pipe_count is increased by one
+*/
 void	pipe_manufacturing(t_data *data)
 {
 	int	i;
@@ -65,6 +93,17 @@ void	pipe_manufacturing(t_data *data)
 	}
 }
 
+/**
+ * @param cmd command string to be executed
+ * child is forked and executed command
+ * 
+ * in child:
+ * plumbing connects all the pipes, does IO redirection, closes unused fds
+ * execute_cmd executes execve and transforms the process to the program
+ * process
+ * in parent:
+ * increases cmd_count by one and returns back to main function
+*/
 void	child_labor(char *cmd, t_data *data)
 {
 	pid_t		pid;

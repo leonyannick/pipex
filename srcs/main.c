@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 17:20:04 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 17:35:47 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,18 @@ void	init_data(char **argv, int argc, t_data *data)
 	data->outfile = open(argv[argc - 1], O_RDWR);
 	data->here_doc_temp = NULL;
 	if (data->outfile == -1 || data->infile == -1)
-		error_fatal("infile/outfile", NULL);
+		error_fatal("infile or outfile", NULL);
 }
 
+/**
+ * close infile/outfile + all pipe fds as they are not used in main process
+ * and otherwise child processes could not finish
+ * 
+ * pipe integer array is freed
+ * 
+ * in case of here_doc temporary file is unlinked and string to save temporary
+ * file is freed
+*/
 void	cleanup(t_data *data)
 {
 	close(data->infile);
@@ -42,6 +51,29 @@ void	cleanup(t_data *data)
 	free(data->here_doc_temp);
 }
 
+/**
+ * HERE_DOC:
+ * -STDIN-> -here_doc_temp-> [cmd1] <-pipe1-> ... <cmdn> -outfile->
+ * first command is in argv at index 3
+ * ncmds = argc - 4
+ * output appended to outfile
+ * 
+ * NORMAL PIPING
+ * -infile-> [cmd1] <-pipe1-> [cmd2] <-pipe2-> ... <cmdn> -outfile->
+ * first command is in argv at index 2
+ * ncmds = argc - 3
+ * output overwrites existing data in outfile
+ * 
+ * pipe_manufacturing creates ncmds - 1 pipes
+ * 
+ * child_labor is executed ncmd times and executes the respective commands
+ * by forking each time
+ * 
+ * cleanup closes all fds in main and discards here_doc_temp in case of
+ * here_doc
+ * 
+ * main process waits ncmd times for all child processes to finish
+*/
 int	main(int argc, char **argv)
 {
 	int		i;

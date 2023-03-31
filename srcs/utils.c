@@ -6,12 +6,19 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/31 11:53:28 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 17:20:12 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 17:38:46 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
 
+/**
+ * @param e_msg error message to be printed on STDERR with perror()
+ * @param data pointer to data struct to free allocated memory 
+ * (pass NULL if there is no data allocated)
+ * 
+ * exits the program with the corresponding errno
+*/
 void	error_fatal(char *e_msg, t_data *data)
 {
 	if (data)
