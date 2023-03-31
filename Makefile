@@ -6,7 +6,7 @@
 #    By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/19 09:17:44 by lbaumann          #+#    #+#              #
-#    Updated: 2023/03/31 12:14:00 by lbaumann         ###   ########.fr        #
+#    Updated: 2023/03/31 16:34:01 by lbaumann         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,6 +45,7 @@ SRCS = \
 	srcs/command.c \
 	srcs/pipex.c \
 	srcs/utils.c \
+	srcs/heredoc.c \
 
 #libft
 LIBFT = $(LIBFTDIR)libft.a

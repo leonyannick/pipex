@@ -6,11 +6,23 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/31 11:53:28 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 12:09:00 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 17:20:12 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
+
+void	error_fatal(char *e_msg, t_data *data)
+{
+	if (data)
+	{
+		free_int_arr(data->pipes, data->pipe_count);
+		if (data->here_doc_temp)
+			free(data->here_doc_temp);
+	}
+	perror(e_msg);
+	exit(errno);
+}
 
 void	free_int_arr(int **ptr, int nrows)
 {

@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/30 10:00:48 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 12:03:46 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 17:18:13 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@
  * if write access is available execve is called -> takes over memory
  * memory is freed if program doesnt exist
 */
-int	execute_cmd(char *cmd, t_data *data)
+void	execute_cmd(char *cmd, t_data *data)
 {
-	int	i;
+	int		i;
 	char	**paths;
 	char	**envp;
-	
+
 	i = 0;
 	while (ft_strncmp(environ[i], "PATH", 4))
 		i++;
@@ -50,9 +50,8 @@ int	execute_cmd(char *cmd, t_data *data)
 	}
 	if (access(envp[0], X_OK) == 0)
 		execve(envp[0], envp, NULL);
-	error_fatal("command does not exist", data);
+	error_fatal(cmd, data);
 	free(cmd);
 	ft_free_split_arr(envp);
 	ft_free_split_arr(paths);
-	return (1);
 }
