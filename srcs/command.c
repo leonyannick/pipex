@@ -6,27 +6,11 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/30 10:00:48 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/30 14:36:38 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 12:03:46 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
-
-void	*free_split_arr(char **arr)
-{
-	size_t	i;
-
-	if (!arr)
-		return (NULL);
-	i = 0;
-	while (arr[i])
-	{
-		arr[i] = ft_free_set_null(arr[i]);
-		i++;
-	}
-	arr = ft_free_set_null(arr);
-	return (NULL);
-}
 
 /**
  * goes through path variable and searches for the program in its directories
@@ -43,7 +27,7 @@ void	*free_split_arr(char **arr)
  * if write access is available execve is called -> takes over memory
  * memory is freed if program doesnt exist
 */
-int	execute_cmd(char *cmd)
+int	execute_cmd(char *cmd, t_data *data)
 {
 	int	i;
 	char	**paths;
@@ -66,9 +50,9 @@ int	execute_cmd(char *cmd)
 	}
 	if (access(envp[0], X_OK) == 0)
 		execve(envp[0], envp, NULL);
-	error_fatal("command does not exist");
+	error_fatal("command does not exist", data);
 	free(cmd);
-	free_split_arr(envp);
-	free_split_arr(paths);
+	ft_free_split_arr(envp);
+	ft_free_split_arr(paths);
 	return (1);
 }

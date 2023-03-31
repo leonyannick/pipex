@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:42:54 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/30 17:49:49 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 12:13:21 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,6 @@ extern char **environ;
 # define READ 0
 # define WRITE 1
 
-int	execute_cmd(char *cmd);
-
 typedef struct s_data
 {
 	int		**pipes;
@@ -41,11 +39,16 @@ typedef struct s_data
 	int		outfile;
 }t_data;
 
-typedef enum e_redirect
-{
-	INPUT,
-	OUTPUT,
-	PIPE
-}e_redirect;
+int		execute_cmd(char *cmd, t_data *data);
+void	error_fatal(char *e_msg, t_data *data);
+
+//utils.c
+void	free_int_arr(int **ptr, int nrows);
+
+//pipex.c
+void	child_labor(char *cmd, t_data *data);
+void	plumbing(t_data *data);
+void	close_unused_pipes(t_data *data);
+void	pipe_manufacturing(t_data *data);
 
 #endif

@@ -6,24 +6,11 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 11:24:33 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/03/31 13:18:28 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
-
-void	free_int_arr(int **ptr, int nrows)
-{
-	int	i;
-
-	i = 0;
-	while (i < nrows)
-	{
-		free(ptr[i]);
-		i++;
-	}
-	free(ptr);
-}
 
 void	error_fatal(char *e_msg, t_data *data)
 {
@@ -31,53 +18,6 @@ void	error_fatal(char *e_msg, t_data *data)
 		free_int_arr(data->pipes, data->pipe_count);
 	perror(e_msg);
 	exit(errno);
-}
-
-void	close_unused_pipes(t_data *data)
-{
-	int	i;
-
-	i = 0;
-	while (i < data->pipe_count)
-	{
-		close(data->pipes[i][READ]);
-		close(data->pipes[i][WRITE]);
-		i++;
-	}
-}
-
-void	plumbing(t_data *data)
-{
-	if (data->cmd_count == 0)
-	{
-		dup2(data->infile, STDIN_FILENO);
-		close(data->infile);
-	}
-	if (data->cmd_count == (data->ncmds - 1))
-	{
-		dup2(data->outfile, STDOUT_FILENO);
-		close(data->outfile);
-	}
-	if (data->cmd_count != 0)
-		dup2(data->pipes[data->cmd_count - 1][READ], STDIN_FILENO);
-	if (data->cmd_count != (data->ncmds - 1))
-		dup2(data->pipes[data->cmd_count][WRITE], STDOUT_FILENO);
-	close_unused_pipes(data);
-}
-
-
-void	child_labor(char *cmd, t_data *data)
-{
-	pid_t		pid;
-
-	pid = fork();
-	if (pid == -1)
-		error_fatal("fork", data);
-	if (pid == 0)
-	{
-		plumbing(data);
-		execute_cmd(cmd);
-	}
 }
 
 void	usage(void)
@@ -88,25 +28,44 @@ void	usage(void)
 	exit(EXIT_SUCCESS);
 }
 
-void	pipe_manufacturing(t_data *data)
+void	init_data(char **argv, int argc, t_data *data)
 {
-	int	i;
+	data->ncmds = argc - 3;
+	data->cmd_count = 0;
+	data->infile = open(argv[1], O_RDONLY);
+	data->outfile = open(argv[argc - 1], O_RDWR);
+	if (data->outfile == -1 || data->infile == -1)
+		error_fatal("infile/outfile", NULL);
+}
 
-	data->pipe_count = 0;
-	data->pipes = malloc(sizeof(int *) * (data->ncmds - 1));
-	if (!data->pipes)
-		error_fatal("pipe malloc", data);
-	i = 0;
-	while (i < (data->ncmds - 1))
+void	cleanup(t_data *data)
+{
+	close(data->infile);
+	close(data->outfile);
+	close_unused_pipes(data);
+	free_int_arr(data->pipes, data->pipe_count);
+}
+
+void	heredoc(t_data *data, char **argv)
+{
+	int		here_doc_temp;
+	char	*line;
+	char	*limiter_with_nl;
+	
+	here_doc_temp = open("./here_doc_temp", O_RDWR | O_TRUNC | O_CREAT);
+	if (here_doc_temp == -1)
+		error_fatal("here_doc creation failed", NULL);
+	limiter_with_nl = ft_strjoin(argv[2], "\n");
+	line = get_next_line(STDIN_FILENO);
+	while (ft_strcmp(line, limiter_with_nl))
 	{
-		data->pipes[i] = malloc(sizeof(int) * 2);
-		if (!data->pipes[i])
-			error_fatal("pipe malloc", data);
-		if (pipe(data->pipes[i]) == -1)
-			error_fatal("pipe", data);
-		data->pipe_count++;
-		i++;
+		write(here_doc_temp, line, ft_strlen(line));
+		free(line);
+		line = get_next_line(STDIN_FILENO);
 	}
+	free(limiter_with_nl);
+	close(here_doc_temp);
+	
 }
 
 int	main(int argc, char **argv)
@@ -114,31 +73,22 @@ int	main(int argc, char **argv)
 	int		i;
 	t_data	data;
 
-	data.ncmds = argc - 3;
-	data.cmd_count = 0;
-	data.infile = open(argv[1], O_RDONLY);
-	data.outfile = open(argv[argc - 1], O_RDWR);
-	if (data.outfile == -1 || data.infile == -1)
-		error_fatal("infile/outfile", NULL);
-	if (argc < 5)
-		usage();
-	pipe_manufacturing(&data);
-	i = 2;
-	while (i < argc - 1)
-	{
-		child_labor(argv[i], &data);
-		data.cmd_count++;
-		i++;
-	}
-	i = 2;
-	close(data.infile);
-	close(data.outfile);
-	close_unused_pipes(&data);
-	free_int_arr(data.pipes, data.pipe_count);
-	while (i < argc - 1)
-	{
-		wait(NULL);
-		i++;
-	}
+	heredoc(&data, argv);
+	// if (argc < 5)
+	// 	usage();
+	// if (ft_strcmp(argv[1], "here_doc") == 0)
+	// 	heredoc();
+	// init_data(argv, argc, &data);
+	// pipe_manufacturing(&data);
+	// i = 2;
+	// while (i < argc - 1)
+	// 	child_labor(argv[i++], &data);
+	// i = 2;
+	// cleanup(&data);
+	// while (i < argc - 1)
+	// {
+	// 	wait(NULL);
+	// 	i++;
+	// }
 	return (EXIT_SUCCESS);
 }
