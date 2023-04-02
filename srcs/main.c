@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 17:35:47 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/04/02 13:07:20 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,10 @@ void	cleanup(t_data *data)
 	close_unused_pipes(data);
 	free_int_arr(data->pipes, data->pipe_count);
 	if (data->here_doc_temp)
-		unlink(data->here_doc_temp);
+	{
+		if (unlink(data->here_doc_temp) == -1)
+			error_fatal("unlink of temp file failed", data);
+	}
 	free(data->here_doc_temp);
 }
 
