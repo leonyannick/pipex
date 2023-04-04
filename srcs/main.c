@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/04/02 13:07:20 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/04/04 10:19:24 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,12 @@ void	init_data(char **argv, int argc, t_data *data)
 	data->ncmds = argc - 3;
 	data->cmd_count = 0;
 	data->infile = open(argv[1], O_RDONLY);
-	data->outfile = open(argv[argc - 1], O_RDWR);
+	if (data->infile == -1)
+		error_fatal("infile", NULL);
+	data->outfile = open(argv[argc - 1], O_RDWR | O_CREAT | O_TRUNC, 0777);
+	if (data->outfile == -1)
+		error_fatal("outfile", NULL);
 	data->here_doc_temp = NULL;
-	if (data->outfile == -1 || data->infile == -1)
-		error_fatal("infile or outfile", NULL);
 }
 
 /**

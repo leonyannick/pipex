@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/31 16:31:58 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 17:54:58 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/04/04 10:51:03 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	heredoc(t_data *data, char **argv, int argc)
 	char	*line;
 
 	data->here_doc_temp = ft_strdup("./.here_doc_temp");
-	data->infile = open(data->here_doc_temp, O_CREAT | O_RDWR, 0666);
+	data->infile = open(data->here_doc_temp, O_CREAT | O_RDWR | O_TRUNC, 0666);
 	if (data->infile == -1)
 		error_fatal("here_doc creation failed", NULL);
 	line = get_next_line(STDIN_FILENO);

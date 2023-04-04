@@ -6,7 +6,7 @@
 /*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/30 10:00:48 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/03/31 17:18:13 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/04/04 10:40:31 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,15 @@
  * if write access is available execve is called -> takes over memory
  * memory is freed if program doesnt exist
 */
-void	execute_cmd(char *cmd, t_data *data)
+static void	search_cmd_in_path(char *cmd, char **envp, t_data *data)
 {
 	int		i;
 	char	**paths;
-	char	**envp;
 
 	i = 0;
 	while (ft_strncmp(environ[i], "PATH", 4))
 		i++;
 	paths = ft_split(&environ[i][4], ':');
-	envp = ft_split(cmd, ' ');
 	i = 0;
 	cmd = ft_strjoin("/", envp[0]);
 	free(envp[0]);
@@ -54,4 +52,22 @@ void	execute_cmd(char *cmd, t_data *data)
 	free(cmd);
 	ft_free_split_arr(envp);
 	ft_free_split_arr(paths);
+}
+
+/**
+ * stops in case of an empty string (otherwise access would fail in bad access)
+ * then checks if cmd is already a valid executable
+ * if not function search_cmd_in_path is called to search for the cmd in path
+ * environment variable
+*/
+void	execute_cmd(char *cmd, t_data *data)
+{
+	char	**envp;
+
+	if (!cmd[0])
+		error_fatal("cmd is an empty str", data);
+	envp = ft_split(cmd, ' ');
+	if (access(envp[0], X_OK) == 0)
+		execve(envp[0], envp, NULL);
+	search_cmd_in_path(cmd, envp, data);
 }
