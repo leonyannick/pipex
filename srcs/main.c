@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lbaumann <lbaumann@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/19 11:52:40 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/04/04 10:19:24 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/04/04 17:20:54 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	init_data(char **argv, int argc, t_data *data)
 	data->infile = open(argv[1], O_RDONLY);
 	if (data->infile == -1)
 		error_fatal("infile", NULL);
-	data->outfile = open(argv[argc - 1], O_RDWR | O_CREAT | O_TRUNC, 0777);
+	data->outfile = open(argv[argc - 1], O_RDWR | O_CREAT | O_TRUNC, 0666);
 	if (data->outfile == -1)
 		error_fatal("outfile", NULL);
 	data->here_doc_temp = NULL;

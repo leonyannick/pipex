@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lbaumann <lbaumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lbaumann <lbaumann@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/31 16:31:58 by lbaumann          #+#    #+#             */
-/*   Updated: 2023/04/04 10:51:03 by lbaumann         ###   ########.fr       */
+/*   Updated: 2023/04/04 17:22:55 by lbaumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void	heredoc(t_data *data, char **argv, int argc)
 		error_fatal("could not open here_doc_temp", NULL);
 	data->ncmds = argc - 4;
 	data->cmd_count = 0;
-	data->outfile = open(argv[argc - 1], O_RDWR | O_APPEND);
+	data->outfile = open(argv[argc - 1], O_RDWR | O_APPEND | O_CREAT, 0666);
 	if (data->outfile == -1)
 		error_fatal("outfile", NULL);
 }
